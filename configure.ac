@@ -1,4 +1,5 @@
-AC_INIT([yara], [4.5.5], [vmalvarez@virustotal.com])
+AC_INIT([yara],[4.5.5],[vmalvarez@virustotal.com])
+AC_CONFIG_HEADERS([config.h])
 
 AM_SILENT_RULES([yes])
 AC_CONFIG_SRCDIR([cli/yara.c])
@@ -20,7 +21,7 @@ no_std_allocator="-fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 
 AC_PROG_CC
-AM_PROG_LEX
+AM_PROG_LEX([noyywrap])
 AC_PROG_YACC
 
 # If the C compiler supports the keyword inline, do nothing. Otherwise define
@@ -140,7 +141,7 @@ AC_ARG_ENABLE([profiling],
 AC_ARG_WITH([debug-verbose],
   [AS_HELP_STRING([--with-debug-verbose=[[NUM]]], [Turn on runtime debugging information])],
   [if test $withval -gt 0; then
-    AC_DEFINE_UNQUOTED([YR_DEBUG_VERBOSITY], [$withval])
+    AC_DEFINE_UNQUOTED([YR_DEBUG_VERBOSITY], [$withval], [Debug verbosity level])
    else
     AC_MSG_ERROR([debug verbosity must be greater than 0])
   fi])
@@ -390,9 +391,11 @@ AM_CONDITIONAL([USE_FREEBSD_PROC], [test x$proc_interface = xfreebsd ])
 AM_CONDITIONAL([USE_OPENBSD_PROC], [test x$proc_interface = xopenbsd ])
 AM_CONDITIONAL([USE_MACH_PROC], [test x$proc_interface = xmach ])
 AM_CONDITIONAL([USE_NO_PROC], [test x$proc_interface = xnone ])
-AS_IF(
-  [test x$proc_interface != xnone],[AC_DEFINE([HAVE_SCAN_PROC_IMPL],[1])],
-  [test x$proc_interface = xnone],[AC_DEFINE([HAVE_SCAN_PROC_IMPL],[0])])
+AS_IF([test "x$proc_interface" != xnone],
+  [AC_DEFINE([HAVE_SCAN_PROC_IMPL], [1], [Define to 1 if a scan process implementation is available])],
+  [test "x$proc_interface" = xnone],
+  [AC_DEFINE([HAVE_SCAN_PROC_IMPL], [0], [Define to 0 if no scan process implementation is available])]
+)
 
 # Configure TLSH function
 CFLAGS="$CFLAGS -DBUCKETS_128=1 -DCHECKSUM_1B=1"

@@ -63,7 +63,7 @@ dnl Marcin Owsiany <marcin@owsiany.pl>
 AC_DEFUN([ACX_PTHREAD], [
 AC_REQUIRE([AC_CANONICAL_HOST])
 AC_LANG_SAVE
-AC_LANG_C
+AC_LANG([C])
 acx_pthread_ok=no
 
 # We used to check for pthread.h first, but this fails if pthread.h
@@ -79,7 +79,7 @@ if test x"$PTHREAD_LIBS$PTHREAD_CFLAGS" != x; then
         save_LIBS="$LIBS"
         LIBS="$PTHREAD_LIBS $LIBS"
         AC_MSG_CHECKING([for pthread_join in LIBS=$PTHREAD_LIBS with CFLAGS=$PTHREAD_CFLAGS])
-        AC_TRY_LINK_FUNC(pthread_join, acx_pthread_ok=yes)
+        AC_CHECK_FUNC([pthread_join], [acx_pthread_ok=yes])
         AC_MSG_RESULT($acx_pthread_ok)
         if test x"$acx_pthread_ok" = xno; then
                 PTHREAD_LIBS=""
@@ -176,11 +176,20 @@ for flag in $acx_pthread_flags; do
         # pthread_cleanup_push because it is one of the few pthread
         # functions on Solaris that doesn't have a non-functional libc stub.
         # We try pthread_create on general principles.
-        AC_TRY_LINK([#include <pthread.h>],
-                    [pthread_t th; pthread_join(th, 0);
-                     pthread_attr_init(0); pthread_cleanup_push(0, 0);
-                     pthread_create(0,0,0,0); pthread_cleanup_pop(0); ],
-                    [acx_pthread_ok=yes])
+        AC_LINK_IFELSE(
+         [AC_LANG_PROGRAM(
+            [[#include <pthread.h>]],
+            [[
+               pthread_t th; 
+               pthread_join(th, 0);
+               pthread_attr_init(0); 
+               pthread_cleanup_push(0, 0);
+               pthread_create(0, 0, 0, 0); 
+               pthread_cleanup_pop(0);
+            ]]
+         )],
+         [acx_pthread_ok=yes]
+         )
 
         LIBS="$save_LIBS"
         CFLAGS="$save_CFLAGS"
@@ -206,8 +215,13 @@ if test "x$acx_pthread_ok" = xyes; then
     AC_MSG_CHECKING([for joinable pthread attribute])
     attr_name=unknown
     for attr in PTHREAD_CREATE_JOINABLE PTHREAD_CREATE_UNDETACHED; do
-        AC_TRY_LINK([#include <pthread.h>], [int attr=$attr; return attr;],
-                        [attr_name=$attr; break])
+        AC_LINK_IFELSE(
+         [AC_LANG_PROGRAM(
+            [[#include <pthread.h>]],
+            [[int attr = $attr; return attr;]]
+         )],
+         [attr_name=$attr; break]
+         )
     done
         AC_MSG_RESULT($attr_name)
         if test "$attr_name" != PTHREAD_CREATE_JOINABLE; then
@@ -269,7 +283,10 @@ if test "x$acx_pthread_ok" = xyes; then
     # then we can't do this test.
     if test x"$done" = xno; then
        AC_MSG_CHECKING([whether to check for GCC pthread/shared inconsistencies])
-       AC_TRY_LINK(,, , [done=yes])
+       AC_LINK_IFELSE(
+         [AC_LANG_PROGRAM([[]], [[]])],
+         [done=yes]
+         )
 
        if test "x$done" = xyes ; then
           AC_MSG_RESULT([no])
@@ -280,11 +297,20 @@ if test "x$acx_pthread_ok" = xyes; then
 
     if test x"$done" = xno; then
        AC_MSG_CHECKING([whether -pthread is sufficient with -shared])
-       AC_TRY_LINK([#include <pthread.h>],
-          [pthread_t th; pthread_join(th, 0);
-          pthread_attr_init(0); pthread_cleanup_push(0, 0);
-          pthread_create(0,0,0,0); pthread_cleanup_pop(0); ],
-          [done=yes])
+       AC_LINK_IFELSE(
+         [AC_LANG_PROGRAM(
+            [[#include <pthread.h>]],
+            [[
+               pthread_t th; 
+               pthread_join(th, 0);
+               pthread_attr_init(0); 
+               pthread_cleanup_push(0, 0);
+               pthread_create(0, 0, 0, 0); 
+               pthread_cleanup_pop(0);
+            ]]
+         )],
+         [done=yes]
+         )
 
        if test "x$done" = xyes; then
           AC_MSG_RESULT([yes])
@@ -300,11 +326,20 @@ if test "x$acx_pthread_ok" = xyes; then
     if test x"$done" = xno; then
        AC_MSG_CHECKING([whether -lpthread fixes that])
        LIBS="-lpthread $PTHREAD_LIBS $save_LIBS"
-       AC_TRY_LINK([#include <pthread.h>],
-          [pthread_t th; pthread_join(th, 0);
-          pthread_attr_init(0); pthread_cleanup_push(0, 0);
-          pthread_create(0,0,0,0); pthread_cleanup_pop(0); ],
-          [done=yes])
+       AC_LINK_IFELSE(
+         [AC_LANG_PROGRAM(
+            [[#include <pthread.h>]],
+            [[
+               pthread_t th; 
+               pthread_join(th, 0);
+               pthread_attr_init(0); 
+               pthread_cleanup_push(0, 0);
+               pthread_create(0, 0, 0, 0); 
+               pthread_cleanup_pop(0);
+            ]]
+         )],
+         [done=yes]
+         )
 
        if test "x$done" = xyes; then
           AC_MSG_RESULT([yes])
@@ -319,11 +354,20 @@ if test "x$acx_pthread_ok" = xyes; then
     if test x"$done" = xno; then
        AC_MSG_CHECKING([whether -lc_r fixes that])
        LIBS="-lc_r $PTHREAD_LIBS $save_LIBS"
-       AC_TRY_LINK([#include <pthread.h>],
-           [pthread_t th; pthread_join(th, 0);
-            pthread_attr_init(0); pthread_cleanup_push(0, 0);
-            pthread_create(0,0,0,0); pthread_cleanup_pop(0); ],
-           [done=yes])
+       AC_LINK_IFELSE(
+         [AC_LANG_PROGRAM(
+            [[#include <pthread.h>]],
+            [[
+               pthread_t th; 
+               pthread_join(th, 0);
+               pthread_attr_init(0); 
+               pthread_cleanup_push(0, 0);
+               pthread_create(0,0,0,0); 
+               pthread_cleanup_pop(0);
+            ]]
+         )],
+         [done=yes]
+         )
 
        if test "x$done" = xyes; then
           AC_MSG_RESULT([yes])
